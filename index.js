@@ -7,4 +7,4 @@
   messenger chatbot api to serve the results
 */
 
-require("./src/app.js");
+require("./src/app");

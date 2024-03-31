@@ -40,7 +40,7 @@ async function send(senderPsid, msg) {
       recipient: {
         id: senderPsid,
       },
-      messages: {
+      message: {
         text: msg || "INTERNAL: response was empty.",
       },
     },

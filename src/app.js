@@ -83,7 +83,7 @@ asyncRouter.post("/webhook", async (req, res) => {
 });
 
 app.get("/webhook", (req, res) => {
-  const verifyToken = process.env.FB_PAGE_ACCESS_TOKEN;
+  const verifyToken = process.env.FB_PAGE_VERIFY_TOKEN;
   // Parse the query params
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];

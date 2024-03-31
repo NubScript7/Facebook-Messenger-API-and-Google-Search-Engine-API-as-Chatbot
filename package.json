@@ -1,0 +1,29 @@
+{
+  "name": "Facebook-Messenger-API-and-Google-Search-Engine-API-as-Chatbot",
+  "version": "1.0.0",
+  "description": "using google's search engine api to locate relative search prompt items and extract information from the site and facebook messenger chatbot api to serve the results",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "dev": "nodemon index"
+  },
+  "keywords": [
+    "fca",
+    "gse",
+    "facebook",
+    "messenger",
+    "api",
+    "chatbot",
+    "google",
+    "search engine",
+    "web scraper"
+  ],
+  "author": "nubscript7",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "nodemon": "^3.1.0"
+  }
+}

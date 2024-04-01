@@ -77,7 +77,7 @@ asyncRouter.post("/webhook", async (req, res) => {
 
       request
         .then((e) => send(senderId, e))
-        .catch(() => send(senderId, "search failed"));
+        .catch(e => send(senderId, e));
     }
   }
 });

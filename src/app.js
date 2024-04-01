@@ -1,3 +1,5 @@
+"use strict"
+
 const express = require("express");
 const asyncRouter = require("express-promise-router")();
 const axios = require("axios");
@@ -34,7 +36,8 @@ async function send(senderPsid, msg) {
   if (messagesCount >= 50) return;
   messagesCount += 1;
 
-  await axios.post(
+  console.log("posting message: " + msg);
+  axios.post(
     "https://graph.facebook.com/v2.6/me/messages",
     {
       recipient: {
@@ -49,7 +52,9 @@ async function send(senderPsid, msg) {
         access_token: process.env.FB_PAGE_ACCESS_TOKEN,
       },
     },
-  );
+  )
+  .then(() => console.log("message posted successfully: " + msg))
+  .catch(() => console.log("message was not posted successfully: " + msg))
 }
 
 asyncRouter.post("/webhook", async (req, res) => {
@@ -77,7 +82,10 @@ asyncRouter.post("/webhook", async (req, res) => {
 
       request
         .then((e) => send(senderId, e))
-        .catch(e => send(senderId, e));
+        .catch(e => {
+          console.log(e)
+          send(senderId, "Sorry!, i couldn't process your message, please try again later.")
+        });
     }
   }
 });

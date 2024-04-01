@@ -54,7 +54,10 @@ async function send(senderPsid, msg) {
     },
   )
   .then(() => console.log("message posted successfully: " + msg))
-  .catch(() => console.log("message was not posted successfully: " + msg))
+  .catch(e => {
+    console.log("message was not posted successfully: " + msg)
+    console.log(e)
+  })
 }
 
 asyncRouter.post("/webhook", async (req, res) => {
@@ -66,7 +69,7 @@ asyncRouter.post("/webhook", async (req, res) => {
       const msg = user.message?.text;
       if (!msg) return;
 
-      const request = new Promise((resolve, reject) => {
+      new Promise((resolve, reject) => {
         axios
           .get(createSearchQuery(msg))
           .then((e) => {
@@ -78,12 +81,9 @@ asyncRouter.post("/webhook", async (req, res) => {
             return resolve(str);
           })
           .catch((err) => reject(err));
-      });
-
-      request
-        .then((e) => send(senderId, e))
-        .catch(e => {
-          console.log(e)
+      }).then((e) => send(senderId, e))
+        .catch(err => {
+          console.log("error",err)
           send(senderId, "Sorry!, i couldn't process your message, please try again later.")
         });
     }

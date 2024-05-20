@@ -4,8 +4,13 @@ const express = require("express");
 const asyncRouter = require("express-promise-router")();
 const axios = require("axios");
 const cors = require("cors");
-
+const prompt = require("prompt-sync")();
 const app = express();
+
+if(process.argv.some(e => e === "--dev-mode")) {
+  console.warn("WARNING: starting server in dev mode.")
+  process.env.fb_url = "http://localhost:6700/webhook"
+}
 
 app.use(cors());
 app.use(express.json());
@@ -26,7 +31,7 @@ function createSearchQuery(search) {
   return `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${engineId}&q=${search}`;
 }
 
-async function send(senderPsid, msg) {
+function send(senderPsid, msg) {
   /*
   spam prevention feature, when the app somehow breaks
   and causes it to spam
@@ -38,20 +43,20 @@ async function send(senderPsid, msg) {
 
   console.log("posting message: " + msg);
   axios.post(
-    "https://graph.facebook.com/v2.6/me/messages",
+   "https://graph.facebook.com/v2.6/me/messages",
     {
       recipient: {
-        id: senderPsid,
+        id: senderPsid
       },
       message: {
-        text: msg || "INTERNAL: response was empty.",
-      },
+        text: msg || "INTERNAL: response was empty."
+      }
     },
     {
       params: {
-        access_token: process.env.FB_PAGE_ACCESS_TOKEN,
-      },
-    },
+        access_token: process.env.FB_PAGE_ACCESS_TOKEN
+      }
+    }
   )
   .then(() => console.log("message posted successfully: " + msg))
   .catch(e => {
@@ -60,7 +65,7 @@ async function send(senderPsid, msg) {
   })
 }
 
-asyncRouter.post("/webhook", async (req, res) => {
+app.post("/webhook", (req, res) => {
   if (req.body.object === "page") {
     for (const entry of req.body.entry) {
       res.send("EVENT_RECEIVED");
@@ -81,11 +86,16 @@ asyncRouter.post("/webhook", async (req, res) => {
             return resolve(str);
           })
           .catch((err) => reject(err));
-      }).then((e) => send(senderId, e))
-        .catch(err => {
-          console.log("error",err)
-          send(senderId, "Sorry!, i couldn't process your message, please try again later.")
-        });
+      })
+      .then((e) => {
+        console.log("successful retrieved data: "+e)
+        send(senderId, e)
+        
+        })
+      .catch(err => {
+        console.log("error",err)
+        send(senderId, "Sorry!, i couldn't process your message, please try again later.")
+      });
     }
   }
 });
@@ -116,3 +126,9 @@ app.get("/webhook", (req, res) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log("app is healthy and running!");
 });
+
+/* //jest testing
+module.exports = {
+  send
+}
+*/

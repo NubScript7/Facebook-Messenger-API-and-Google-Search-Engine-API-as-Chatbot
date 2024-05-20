@@ -4,7 +4,7 @@ const express = require("express");
 const asyncRouter = require("express-promise-router")();
 const axios = require("axios");
 const cors = require("cors");
-const prompt = require("prompt-sync")();
+//const prompt = require("prompt-sync")();
 const app = express();
 
 if(process.argv.some(e => e === "--dev-mode")) {

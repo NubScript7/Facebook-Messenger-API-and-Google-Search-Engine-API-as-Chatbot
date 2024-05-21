@@ -81,7 +81,7 @@ app.post("/webhook", (req, res) => {
             let str = "";
             e.data.items.forEach((t, i) => {
               const { title, link, snippet } = t;
-              str += `❚ ${i + 1}.title: ${title}\n\n• link: ${link}\n\n• desc: ${snippet}\n\n\n`;
+              str += `${i + 1}.title: ${title}\n\nlink: ${link}\n\ndesc: ${snippet}\n\n\n`;
             });
             return resolve(str);
           })

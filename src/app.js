@@ -88,6 +88,7 @@ app.post("/webhook", (req, res) => {
           .catch((err) => reject(err));
       })
       .then(e => {
+        console.log("retrived data", e)
         send(senderId, e)
       })
       .catch(err => {

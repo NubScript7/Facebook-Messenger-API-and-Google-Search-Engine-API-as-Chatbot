@@ -31,7 +31,7 @@ function createSearchQuery(search) {
   return `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${engineId}&q=${search}`;
 }
 
-function send(senderPsid, msg) {
+function send(id, msg) {
   /*
   spam prevention feature, when the app somehow breaks
   and causes it to spam
@@ -41,12 +41,12 @@ function send(senderPsid, msg) {
   if (messagesCount >= 50) return;
   messagesCount += 1;
 
-  console.log("posting message: " + msg);
+  console.log("posting message: ");
   axios.post(
    `https://graph.facebook.com/v2.6/me/messages?access_token=${process.env.FB_PAGE_ACCESS_TOKEN}`,
     {
       recipient: {
-        id: senderPsid
+        id: id
       },
       message: {
         text: msg || "INTERNAL: response was empty."
@@ -68,38 +68,47 @@ app.get("/postmsg", (req,res) => {
   res.sendStatus(200)
 })
 
+function scrape(msg, id) {
+  const request = new Promise((resolve, reject) => {
+    axios
+    .get(createSearchQuery(msg))
+    .then((e) => {
+      let str = "";
+      e.data.items.forEach((t, i) => {
+        const { title, link, snippet } = t;
+        str += `${i + 1}.title: ${title}\n\nlink: ${link}\n\ndesc: ${snippet}\n\n\n`;
+      });
+      return resolve(str);
+    })
+    .catch((err) => reject(err));
+  })
+  
+  request.then(data => {
+    console.log("retrived data")
+    send(id, "data")
+  })
+  .catch(err => {
+    console.log("error",err.messsage,err.request)
+    send(id, "Sorry!, i couldn't process your message, please try again later.")
+  });
+}
+
+
 app.post("/webhook", (req, res) => {
   if (req.body.object === "page") {
     for (const entry of req.body.entry) {
       const [user] = entry.messaging;
       const senderId = user.sender.id;
       const msg = user.message?.text;
-      if (!msg) return;
-
-      (new Promise((resolve, reject) => {
-        axios
-          .get(createSearchQuery(msg))
-          .then((e) => {
-            let str = "";
-            e.data.items.forEach((t, i) => {
-              const { title, link, snippet } = t;
-              str += `${i + 1}.title: ${title}\n\nlink: ${link}\n\ndesc: ${snippet}\n\n\n`;
-            });
-            return resolve(str);
-          })
-          .catch((err) => reject(err));
-      }))
-      .then(e => {
-        console.log("retrived data")
-        send(senderId, e)
-      })
-      .catch(err => {
-        console.log("error",err.messsage,err.request)
-        send(senderId, "Sorry!, i couldn't process your message, please try again later.")
-      });
+      if (!msg)return console.log("message was empty.");
+      
+      scrape(msg, senderId);
+      
       res.send("EVENT_RECEIVED");
+      console.log("sent status code 200 OK")
     }
   } else {
+    console log("sent status code 401 Unauthorized")
     res.sendStatus(401)
   }
 });

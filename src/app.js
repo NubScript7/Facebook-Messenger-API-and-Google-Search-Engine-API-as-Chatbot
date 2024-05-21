@@ -55,10 +55,18 @@ function send(senderPsid, msg) {
   )
   .then(() => console.log("message posted successfully: " + msg))
   .catch(e => {
-    console.log("message was not posted successfully: " + msg)
+    console.log("MESSAGE WAS NOT POSTED.")
     console.log("message report error:", e)
   })
 }
+
+app.get("/postmsg", (req,res) => {
+  const id = req.params.id;
+  const msg = req.params.msg;
+  if(!id || !msg)return res.sendStatus(400);
+  send(id,msg);
+  res.sendStatus(200)
+})
 
 app.post("/webhook", (req, res) => {
   if (req.body.object === "page") {
@@ -82,11 +90,11 @@ app.post("/webhook", (req, res) => {
           .catch((err) => reject(err));
       }))
       .then(e => {
-        console.log("retrived data", e)
+        console.log("retrived data")
         send(senderId, e)
       })
       .catch(err => {
-        console.log("error",err)
+        console.log("error",err.messsage,err.request)
         send(senderId, "Sorry!, i couldn't process your message, please try again later.")
       });
       res.send("EVENT_RECEIVED");

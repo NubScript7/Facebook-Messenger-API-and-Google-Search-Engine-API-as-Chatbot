@@ -84,14 +84,10 @@ app.post("/webhook", (req, res) => {
       .then(e => {
         console.log("retrived data", e)
         send(senderId, e)
-        .then(() => console.log("MESSAGE POSTED"))
-        .catch(err => console.log("MESSAGE ERROR", err))
       })
       .catch(err => {
         console.log("error",err)
         send(senderId, "Sorry!, i couldn't process your message, please try again later.")
-        .then(() => console.log("MESSAGE WAS NOT RETRIEVED"))
-        .catch(e => console.log("MESSAGE RETRIEVED SEND ERROR", e))
       });
       res.send("EVENT_RECEIVED");
     }

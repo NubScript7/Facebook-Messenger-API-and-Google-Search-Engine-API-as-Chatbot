@@ -108,7 +108,7 @@ app.post("/webhook", (req, res) => {
       console.log("sent status code 200 OK")
     }
   } else {
-    console log("sent status code 401 Unauthorized")
+    console.log("sent status code 401 Unauthorized")
     res.sendStatus(401)
   }
 });

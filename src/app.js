@@ -61,8 +61,8 @@ function send(senderPsid, msg) {
 }
 
 app.get("/postmsg", (req,res) => {
-  const id = req.params.id;
-  const msg = req.params.msg;
+  const id = req.query.id;
+  const msg = req.query.msg;
   if(!id || !msg)return res.sendStatus(400);
   send(id,msg);
   res.sendStatus(200)

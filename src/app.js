@@ -87,7 +87,9 @@ app.post("/webhook", (req, res) => {
           })
           .catch((err) => reject(err));
       })
-      .then(e => send(senderId, e))
+      .then(e => {
+        send(senderId, e)
+      })
       .catch(err => {
         console.log("error",err)
         send(senderId, "Sorry!, i couldn't process your message, please try again later.")
@@ -128,3 +130,4 @@ module.exports = {
   send
 }
 */
+

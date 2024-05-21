@@ -43,7 +43,7 @@ function send(senderPsid, msg) {
 
   console.log("posting message: " + msg);
   axios.post(
-   "https://graph.facebook.com/v2.6/me/messages",
+   `https://graph.facebook.com/v2.6/me/messages?access_token=${process.env.FB_PAGE_ACCESS_TOKEN}`,
     {
       recipient: {
         id: senderPsid
@@ -51,30 +51,24 @@ function send(senderPsid, msg) {
       message: {
         text: msg || "INTERNAL: response was empty."
       }
-    },
-    {
-      params: {
-        access_token: process.env.FB_PAGE_ACCESS_TOKEN
-      }
     }
   )
   .then(() => console.log("message posted successfully: " + msg))
   .catch(e => {
     console.log("message was not posted successfully: " + msg)
-    console.log(e)
+    console.log("message report error:", e)
   })
 }
 
 app.post("/webhook", (req, res) => {
   if (req.body.object === "page") {
     for (const entry of req.body.entry) {
-      res.send("EVENT_RECEIVED");
       const [user] = entry.messaging;
       const senderId = user.sender.id;
       const msg = user.message?.text;
       if (!msg) return;
 
-      new Promise((resolve, reject) => {
+      (new Promise((resolve, reject) => {
         axios
           .get(createSearchQuery(msg))
           .then((e) => {
@@ -86,16 +80,23 @@ app.post("/webhook", (req, res) => {
             return resolve(str);
           })
           .catch((err) => reject(err));
-      })
+      }))
       .then(e => {
         console.log("retrived data", e)
         send(senderId, e)
+        .then(() => console.log("MESSAGE POSTED"))
+        .catch(err => console.log("MESSAGE ERROR", err))
       })
       .catch(err => {
         console.log("error",err)
         send(senderId, "Sorry!, i couldn't process your message, please try again later.")
+        .then(() => console.log("MESSAGE WAS NOT RETRIEVED"))
+        .catch(e => console.log("MESSAGE RETRIEVED SEND ERROR", e))
       });
+      res.send("EVENT_RECEIVED");
     }
+  } else {
+    res.sendStatus(401)
   }
 });
 

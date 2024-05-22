@@ -124,7 +124,7 @@ function translate(char)
 	else if(/[a-z]/.test(char))
 		diff = 120205; //"𝗮".codePointAt(0) - "a".codePointAt(0)
 	else
-		diff = 0
+		diff = 0;
 	return String.fromCodePoint(char.codePointAt(0) + diff);
 }
 
@@ -132,7 +132,7 @@ function translateString(str) {
 	if (str.length === 0) {
 		return "";
 	}
-	return (str.charAt(0) === " " ? " " : translate(str.charAt(0))) + translateString(str.slice(1));
+	return translate(str.charAt(0)) + translateString(str.slice(1));
 }
 
 
@@ -141,10 +141,12 @@ function scrape(msg, id) {
 	axios
 	.get(createSearchQuery(msg))
 	.then(e => {
-		e.data.items.reduceRight((p, item) => {
+	
+		e.data.items.reduce((p, item) => {
+		
 			const { title, link, snippet } = item;
 			
-			p.then(() => {
+			return p.then(() => {
 				const promise = new Promise((resolve, reject) => {
 				
 					send(id,`█ ${translateString(title)}\n\nid: ${currentIndex}\n\n• desc: ${snippet}\n\n• link: ${link}\n\n\n`,true)
@@ -152,10 +154,15 @@ function scrape(msg, id) {
 					.catch(reject)
 				})
 				return promise
-			}).catch(() => send(id, translateString("INTERNAL: failed to send this data :(")))
+			})
+			.catch(() => {
+				return send(id, translateString("INTERNAL: failed to send this data :("),true)
+				.then(Promise.resolve)
+				.catch(() => console.log("Something is wrong with posting message?"))
+			})
 			
-			currentIndex++;
 		},Promise.resolve());
+		
 	})
 	.catch(err => {
 		send(id, "Sorry!, i couldn't process your message, please try again later.")

@@ -87,7 +87,7 @@ function scrape(msg, id) {
     console.log("retrived data")
     
     send(id, `typeof data: ${typeof data}`)
-    send(id, "FETCHED: \n\n${data}")
+    send(id, `FETCHED: \n\n${data}`)
   })
   .catch(err => {
     console.log("error",err.messsage,err.request)

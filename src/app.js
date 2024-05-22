@@ -135,7 +135,6 @@ function translateString(str) {
 	return translate(str.charAt(0)) + translateString(str.slice(1));
 }
 
-
 function scrape(msg, id) {
 	let currentIndex = 1;
 	axios

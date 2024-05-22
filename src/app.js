@@ -155,7 +155,7 @@ app.post("/webhook", (req, res) => {
       const msg = user.message.text;
       if (!msg)return console.log("message was empty.");
       
-      send(id, "fetching data...")
+      send(senderId, "fetching data...");
       scrape(msg, senderId);
       
       res.send("EVENT_RECEIVED");

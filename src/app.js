@@ -68,13 +68,18 @@ function send(id, msg, returnPromise=false) {
   messagesCount += 1;
 
   const req = axios.post(
-   `https://graph.facebook.com/v2.6/me/messages?access_token=${process.env.FB_PAGE_ACCESS_TOKEN}`,
+   "https://graph.facebook.com/v2.6/me/messages",
     {
       recipient: {
         id: id
       },
       message: {
         text: msg || "INTERNAL: response was empty."
+      }
+    },
+    {
+      params: {
+        access_token: process.env.FB_PAGE_ACCESS_TOKEN
       }
     }
   )
@@ -119,17 +124,19 @@ function translateString(str) {
     if (str.length === 0) {
         return "";
     }
-    return translate(str.charAt(0)) + translateString(str.slice(1));
+    return str.charAt(0) === " " ? " " : translate(str.charAt(0)) + translateString(str.slice(1));
 }
 
 
 function scrape(msg, id) {
+  let currentIndex = 1;
   axios
   .get(createSearchQuery(msg))
   .then(e => {
     e.data.items.forEach((t, i) => {
       const { title, link, snippet } = t;
-      send(id,`█ ${translateString(title)}\n\n• desc: ${snippet}\n\n• link: ${link}\n\n\n`);
+      send(id,`█ ${translateString(title)}\n\nid: ${currentIndex}\n\n• desc: ${snippet}\n\n• link: ${link}\n\n\n`);
+      currentIndex++;
     });
   })
   .catch(err => {
@@ -148,6 +155,7 @@ app.post("/webhook", (req, res) => {
       const msg = user.message.text;
       if (!msg)return console.log("message was empty.");
       
+      send(id, "fetching data...")
       scrape(msg, senderId);
       
       res.send("EVENT_RECEIVED");

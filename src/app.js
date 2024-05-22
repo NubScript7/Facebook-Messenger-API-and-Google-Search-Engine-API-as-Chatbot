@@ -96,26 +96,15 @@ app.get("/postmsg", (req,res) => {
 */
 
 function scrape(msg, id) {
-  const request = new Promise((resolve, reject) => {
-    axios
-    .get(createSearchQuery(msg))
-    .then(e => {
-      let str = "";
-      e.data.items.forEach((t, i) => {
-        const { title, link, snippet } = t;
-        str += `█ ${i + 1}.title: ${title}\n\n•link: ${link}\n\n•desc: ${snippet}\n\n\n`;
-      });
-      return resolve(str);
-    })
-    .catch((err) => reject(err));
-  })
-  
-  request.then(data => {
-    console.log("retrived data")
-    send(id, data)
+  axios
+  .get(createSearchQuery(msg))
+  .then(e => {
+    e.data.items.forEach((t, i) => {
+      const { title, link, snippet } = t;
+      send(id,`█ ${i + 1}.title: ${title}\n\n•link: ${link}\n\n•desc: ${snippet}\n\n\n`);
+    });
   })
   .catch(err => {
-   console.log(err)
     send(id, "Sorry!, i couldn't process your message, please try again later.")
   });
 }

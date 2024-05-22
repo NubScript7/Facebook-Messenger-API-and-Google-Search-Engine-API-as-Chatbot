@@ -53,7 +53,7 @@ function createSearchQuery() {
 
 let throwError = false;
 
-function send(id, msg) {
+function send(id, msg, returnPromise=false) {
   
   //spam prevention feature, when the app somehow breaks
   //and causes it to spam
@@ -67,7 +67,7 @@ function send(id, msg) {
   }
   messagesCount += 1;
 
-  axios.post(
+  const req = axios.post(
    `https://graph.facebook.com/v2.6/me/messages?access_token=${process.env.FB_PAGE_ACCESS_TOKEN}`,
     {
       recipient: {
@@ -78,12 +78,18 @@ function send(id, msg) {
       }
     }
   )
-  .then(() => console.log("message posted successfully: " + msg))
-  .catch(e => {
-    console.log("MESSAGE WAS NOT POSTED.")
-    console.log("message report error:", e)
-  })
+  
+  if(returnPromise) {
+    return req;
+  } else {
+    req.then(() => console.log("message posted successfully: " + msg))
+    .catch(e => {
+      console.log("MESSAGE WAS NOT POSTED.")
+      console.log("message report error:", e)
+    })
+  }
 }
+
 
 /*
 app.get("/postmsg", (req,res) => {
@@ -95,13 +101,35 @@ app.get("/postmsg", (req,res) => {
 })
 */
 
+function translate(char)
+{
+    let diff;
+    if (/[A-Z]/.test(char))
+    {
+        diff = "𝗔".codePointAt (0) - "A".codePointAt (0);
+    }
+    else
+    {
+        diff = "𝗮".codePointAt (0) - "a".codePointAt (0);
+    }
+    return String.fromCodePoint(char.codePointAt (0) + diff);
+}
+
+function translateString(str) {
+    if (str.length === 0) {
+        return "";
+    }
+    return translate(str.charAt(0)) + translateString(str.slice(1));
+}
+
+
 function scrape(msg, id) {
   axios
   .get(createSearchQuery(msg))
   .then(e => {
     e.data.items.forEach((t, i) => {
       const { title, link, snippet } = t;
-      send(id,`█ ${i + 1}.title: ${title}\n\n•link: ${link}\n\n•desc: ${snippet}\n\n\n`);
+      send(id,`█ ${translateString(title)}\n\n• desc: ${snippet}\n\n• link: ${link}\n\n\n`);
     });
   })
   .catch(err => {

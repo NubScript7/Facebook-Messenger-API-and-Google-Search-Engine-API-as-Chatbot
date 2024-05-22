@@ -56,11 +56,30 @@ let throwError = false;
 function getPageUsersId() {
 	return axios.post("https://dp-api.adaptable.app/get",{
 		ref: "/pageUsersId"
+	}).then(data => {
+		return {
+			hasError: false,
+			error: null,
+			data,
+			exists: true
+		}
+	}).catch(() => {
+		return {
+			hasError: true,
+			error: "failed to fetch :(",
+			data: {},
+			exists: false
+		}
 	})
 }
 
+app.get("/users", (req,res) => {
+	res.json(getPageUsersId())
+})
+
 function addUserId(id) {
-	axios.post("")
+	const users = getPageUsersId();
+	
 }
 
 function send(id, msg, returnPromise=false) {
@@ -141,14 +160,14 @@ function scrape(msg, id) {
 	.get(createSearchQuery(msg))
 	.then(e => {
 	
-		e.data.items.reduce((p, item) => {
+		e.data.items.reduce((p, item, i) => {
 		
 			const { title, link, snippet } = item;
 			
 			return p.then(() => {
 				const promise = new Promise((resolve, reject) => {
 				
-					send(id,`█ ${translateString(title)}\n\nid: ${currentIndex}\n\n• desc: ${snippet}\n\n• link: ${link}\n\n\n`,true)
+					send(id,`█ ${i + 1}.${translateString(title)}\n\n• desc: ${snippet}\n\n• link: ${link}\n\n\n`,true)
 					.then(resolve)
 					.catch(reject)
 				})
@@ -160,7 +179,13 @@ function scrape(msg, id) {
 				.catch(() => console.log("Something is wrong with posting message?"))
 			})
 			
-		},Promise.resolve());
+		},Promise.resolve())
+		.then(() => {
+			send(id, translateString("Usage: type the number of the fetched site."))
+		})
+		.catch(() => {
+			send(id, "INTERNAL: an error")
+		})
 		
 	})
 	.catch(err => {
@@ -213,6 +238,8 @@ app.get("/webhook", (req, res) => {
 		res.sendStatus(403);
 	}
 });
+
+
 
 app.listen(process.env.PORT || 3000, () => {
 	console.log("app is healthy and running!");

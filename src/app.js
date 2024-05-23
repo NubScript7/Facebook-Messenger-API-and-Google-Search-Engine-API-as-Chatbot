@@ -1,7 +1,9 @@
 "use strict"
+if(process.argv.some(e => e === "--dev-mode"))
+	require("dotenv").config()
 
 const express = require("express");
-const asyncRouter = require("express-promise-router")();
+//const asyncRouter = require("express-promise-router")();
 const axios = require("axios");
 const cors = require("cors");
 //const prompt = require("prompt-sync")();
@@ -14,7 +16,7 @@ if(process.argv.some(e => e === "--dev-mode")) {
 
 app.use(cors());
 app.use(express.json());
-app.use(asyncRouter);
+//app.use(asyncRouter);
 
 /*
 app.get("/kill", (req, res) => {
@@ -197,12 +199,21 @@ function scrape(msg, id) {
 
 app.post("/webhook", (req, res) => {
 	if (req.body.object === "page") {
+		const ea = req.body.entry || null;
+		//console.log(ea,typeof ea,Array.isArray(ea),ea?.length || null)
+		if("object" !== typeof ea ||
+			!Array.isArray(ea) ||
+			(ea?.length || 0) < 1)return res.sendStatus(400)
 		for (const entry of req.body.entry) {
-			const [user] = entry.messaging;
-			console.log(user)
-			const senderId = user.sender.id;
-			const msg = user.message.text;
-			if (!msg)return console.log("message was empty.");
+			if("object" !== typeof entry.messaging ||
+				!Array.isArray(entry.messaging) ||
+				entry.messaging.length !== 1)
+			return res.sendStatus(400);
+			
+			const [user] = entry?.messaging;
+			const senderId = user?.sender?.id || null;
+			const msg = user?.message?.text || null;
+			if (!msg || "string" !== typeof msg || !senderId || isNaN(senderId))return res.sendStatus(400)
 			
 			send(senderId, "fetching data...");
 			scrape(msg, senderId);
@@ -239,14 +250,8 @@ app.get("/webhook", (req, res) => {
 	}
 });
 
-
-
-app.listen(process.env.PORT || 3000, () => {
-	console.log("app is healthy and running!");
-});
-
-/* //jest testing
 module.exports = {
-	send
+	send,
+	app,
+	express
 }
-*/

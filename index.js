@@ -7,4 +7,8 @@
   messenger chatbot api to serve the results
 */
 
-require("./src/app");
+const {app} = require("./src/app");
+
+app.listen(process.env.PORT || 3000, () => {
+	console.log("app is healthy and running!");
+});
